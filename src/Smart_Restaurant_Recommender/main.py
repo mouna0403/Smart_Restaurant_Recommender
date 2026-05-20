@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -197,19 +198,23 @@ html, body, [class*="css"] {
     margin: 36px 0 20px 0;
 }
 
-/* Slide-up animation for main cards */
 @keyframes slideInUp {
     from { opacity: 0; transform: translateY(28px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Scale-in animation for sim cards */
 @keyframes fadeInScale {
     from { opacity: 0; transform: scale(0.94); }
     to   { opacity: 1; transform: scale(1); }
 }
 
-/* Searching banner */
+.card-animate {
+    animation: slideInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sim-animate {
+    animation: fadeInScale 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @keyframes searchPulse {
     0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,107,107,0); }
     50%       { opacity: 0.7; box-shadow: 0 0 30px 6px rgba(255,107,107,0.1); }
@@ -266,20 +271,6 @@ html, body, [class*="css"] {
 
 .attributes-box li {
     margin: 2px 0;
-}
-
-.details-link {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 0.7rem;
-    color: var(--coral);
-    cursor: pointer;
-    text-decoration: none;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-}
-.details-link:hover {
-    opacity: 1;
 }
 
 .footer {
@@ -353,6 +344,8 @@ if "last_generate" not in st.session_state:
     st.session_state.last_generate = 0
 if "details_open" not in st.session_state:
     st.session_state.details_open = {}
+if "sim_version" not in st.session_state:
+    st.session_state.sim_version = {}
 
 mode = st.radio(
     "HOW DO YOU WANT TO EXPLORE?",
@@ -393,18 +386,17 @@ if mode == "🎯 Choose what you like":
     with col4:
         price_options = {
             None: "Any price",
-            1: "$ (Easy on the wallet)",
-            2: "$$ (Comfortable)",
-            3: "$$$ (Treat yourself)",
-            4: "$$$$ (Premium experience)",
+            1: "$ Easy on the wallet",
+            2: "$$ Comfortable",
+            3: "$$$ Treat yourself",
+            4: "$$$$ Premium experience",
         }
-        selected_price_value = st.selectbox(
+        selected_price = st.selectbox(
             "Price",
             options=list(price_options.keys()),
             format_func=lambda x: price_options[x],
             index=0,
         )
-        selected_price = selected_price_value
 
     with col5:
         city_counts = df_food_business["city"].value_counts(dropna=True)
@@ -428,18 +420,17 @@ else:
     with col2:
         price_options = {
             None: "Any price",
-            1: "$ (Easy on the wallet)",
-            2: "$$ (Comfortable)",
-            3: "$$$ (Treat yourself)",
-            4: "$$$$ (Premium experience)",
+            1: "$ Easy on the wallet",
+            2: "$$ Comfortable",
+            3: "$$$ Treat yourself",
+            4: "$$$$ Premium experience",
         }
-        selected_price_value = st.selectbox(
+        selected_price = st.selectbox(
             "Price",
             options=list(price_options.keys()),
             format_func=lambda x: price_options[x],
             index=0,
         )
-        selected_price = selected_price_value
 
     with col3:
         city_counts = df_food_business["city"].value_counts(dropna=True)
@@ -612,6 +603,9 @@ if st.session_state.initial_recos is not None:
                 st.session_state.liked_recos[row["business_id"]] = get_reco(
                     row["business_id"], top_n=5
                 )
+                st.session_state.sim_version[row["business_id"]] = (
+                    st.session_state.reco_version
+                )
                 st.session_state.last_generate = st.session_state.reco_version - 1
         with col2:
             dis_key = f"dis_{idx}_{st.session_state.reco_version}"
@@ -625,6 +619,12 @@ if st.session_state.initial_recos is not None:
                     df_food_business["business_id"].isin(recos_ids)
                 ]
                 cols = st.columns(len(similar_df))
+
+                sim_should_animate = (
+                    st.session_state.sim_version.get(row["business_id"], 0)
+                    == st.session_state.reco_version
+                )
+
                 for j, (_, rec_row) in enumerate(similar_df.iterrows()):
                     with cols[j]:
                         display_business_card(
@@ -635,7 +635,7 @@ if st.session_state.initial_recos is not None:
                             addr_class="sim-addr",
                             accent_color=ACCENT_COLORS[j % len(ACCENT_COLORS)],
                             delay=j * 0.08,
-                            should_animate=False,
+                            should_animate=sim_should_animate,
                             show_details_btn=True,
                             parent_key=f"sim_{i}_{j}",
                         )

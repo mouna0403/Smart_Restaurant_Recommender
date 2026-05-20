@@ -23,8 +23,6 @@ def build_user_embedding(selected_categories, selected_extras, selected_atmosphe
 
     text = ", ".join(tokens)
 
-    print(text)
-
     return encode_text(text)
 
 
