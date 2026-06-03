@@ -36,7 +36,7 @@ The system converts everything (restaurant descriptions + user inputs) into nume
 
 ### Option 1 — Use the deployed app
 
-[https://smartrestaurantrecommender-hs7vjtml7rmlr5dr9detiv.streamlit.app/](https://smartrestaurantrecommender-hs7vjtml7rmlr5dr9detiv.streamlit.app/)
+[https://smartrestaurantrecommender-trndjm3upovorfsub54xt4.streamlit.app/](https://smartrestaurantrecommender-trndjm3upovorfsub54xt4.streamlit.app/)
 
 ---
 
